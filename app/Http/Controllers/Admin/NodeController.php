@@ -37,7 +37,7 @@ class NodeController extends Controller
             $query->whereStatus($status);
         }
     
-        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(10)->appends($request->except('page'));
+        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(3)->appends($request->except('page'));
         // var_dump($nodeList);die;
         foreach ($nodeList as $node) {
             // $online_log = $node->onlineLogs->where('log_time', '>=', strtotime('-5 minutes'))->sortBy('log_time')->first(); // 在线人数
