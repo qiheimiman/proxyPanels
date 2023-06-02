@@ -27,17 +27,23 @@ class NodeController extends Controller
     {
         $status = $request->input('status');
 
-        $query = Node::whereNull('relay_node_id')->with('onlineLogs', 'dailyDataFlows', 'heartbeats', 'childNodes');
+        $query = Node::whereNull('relay_node_id')->with(
+            // 'onlineLogs', 'dailyDataFlows',
+            //  'heartbeats', 
+            'childNodes'    
+            );
 
         if (isset($status)) {
             $query->whereStatus($status);
         }
-
-        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(15)->appends($request->except('page'));
+    
+        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(10)->appends($request->except('page'));
+        // var_dump($nodeList);die;
         foreach ($nodeList as $node) {
-            $online_log = $node->onlineLogs->where('log_time', '>=', strtotime('-5 minutes'))->sortBy('log_time')->first(); // 在线人数
-            $node->online_users = $online_log->online_user ?? 0;
-            $node->transfer = flowAutoShow($node->dailyDataFlows->sum('total')); // 已产生流量
+            // $online_log = $node->onlineLogs->where('log_time', '>=', strtotime('-5 minutes'))->sortBy('log_time')->first(); // 在线人数
+            // $node->online_users = $online_log->online_user ?? 0;
+            // $node->online_users =  0;
+            // $node->transfer = flowAutoShow($node->dailyDataFlows->sum('total')); // 已产生流量
             $node_info = $node->heartbeats->where('log_time', '>=', strtotime(config('tasks.recently_heartbeat')))->sortBy('log_time')->first(); // 近期负载
             $node->isOnline = ! empty($node_info) && ! empty($node_info->load);
             $node->load = $node_info->load ?? false;
