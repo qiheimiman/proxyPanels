@@ -27,14 +27,15 @@ class CoreController extends Controller
 
         $data = array_map('intval', $validator->validated());
 
-        if ($node->heartbeats()->create([
+        $json_data = [
             'uptime'   => $data['uptime'],
             'load'     => implode(' ', [$data['cpu'] / 100, $data['mem'] / 100, $data['disk'] / 100]),
             'log_time' => time(),
-        ])) {
+        ];
+        if ($node->heartbeats()->create($json_data)) {
+            Cache::put("panel:node_heartbeat:".$node->id, $json_data, 300);
             return $this->succeed();
         }
-
         return $this->failed([400201, '生成节点心跳信息失败']);
     }
 

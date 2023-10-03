@@ -37,7 +37,7 @@ class NodeController extends Controller
             $query->whereStatus($status);
         }
     
-        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(3)->appends($request->except('page'));
+        $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(20)->appends($request->except('page'));
         // var_dump($nodeList);die;
         foreach ($nodeList as $node) {
             $node->online_users = Cache::get("panel:onlineLogs:".$node->id,0);
@@ -45,6 +45,18 @@ class NodeController extends Controller
             // $node->online_users =   $online_log ?$online_log->online_user : 0;
             // $node->transfer = flowAutoShow($node->dailyDataFlows->sum('total')); // 已产生流量
             // $node_info = $node->heartbeats->where('log_time', '>=', strtotime(config('tasks.recently_heartbeat')))->sortBy('log_time')->first(); // 近期负载
+            $node_heartbeat = Cache::get("panel:node_heartbeat:".$node->id);
+            $node->isOnline = false;
+            $node->load = false;
+            $node->uptime =0;
+            if($node_heartbeat){
+                $json_data = json_decode($node_heartbeat, true);
+                if($json_data){
+                    $node->isOnline = true;
+                    $node->load = $json_data['load'];
+                    $node->uptime = seconds2time($json_data['uptime']);
+                }
+            }
             // $node->isOnline = ! empty($node_info) && ! empty($node_info->load);
             // $node->load = $node_info? $node_info->load : false;
             // $node->uptime = empty($node_info) ? 0 : seconds2time($node_info->uptime);
