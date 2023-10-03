@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
 use Validator;
 
 class CoreController extends Controller
@@ -40,6 +41,8 @@ class CoreController extends Controller
     // 上报节点在线IP
     public function setNodeOnline(Request $request, Node $node): JsonResponse
     {
+      
+        
         $validator = Validator::make($request->all(), ['*.uid' => 'required|numeric|exists:user,id', '*.ip' => 'required|string']);
 
         if ($validator->fails()) {
@@ -48,18 +51,20 @@ class CoreController extends Controller
 
         $onlineCount = 0;
         foreach ($validator->validated() as $input) { // 处理节点在线IP数据
+            
             $formattedData[] = ['user_id' => $input['uid'], 'ip' => $input['ip'], 'port' => User::find($input['uid'])->port, 'created_at' => time()];
             $onlineCount++;
         }
-
+     
         if (isset($formattedData) && ! $node->onlineIps()->createMany($formattedData)) {  // 生成节点在线IP数据
             return $this->failed([400201, '生成节点在线用户IP信息失败']);
         }
 
         if ($node->onlineLogs()->create(['online_user' => $onlineCount, 'log_time' => time()])) { // 生成节点在线人数数据
+            Cache::put("panel:onlineLogs:".$node->id, $onlineCount, 300);
             return $this->succeed();
         }
-
+       
         return $this->failed([400201, '生成节点在线情况失败']);
     }
 

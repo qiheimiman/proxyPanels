@@ -16,9 +16,9 @@ use App\Models\RuleGroup;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Log;
 use Response;
-
 class NodeController extends Controller
 {
     use DataChart;
@@ -40,14 +40,14 @@ class NodeController extends Controller
         $nodeList = $query->orderByDesc('sort')->orderBy('id')->paginate(3)->appends($request->except('page'));
         // var_dump($nodeList);die;
         foreach ($nodeList as $node) {
+            $node->online_users = Cache::get("panel:onlineLogs:".$node->id,0);
             // $online_log = $node->onlineLogs->where('log_time', '>=', strtotime('-5 minutes'))->sortBy('log_time')->first(); // 在线人数
-            // $node->online_users = $online_log->online_user ?? 0;
-            // $node->online_users =  0;
+            // $node->online_users =   $online_log ?$online_log->online_user : 0;
             // $node->transfer = flowAutoShow($node->dailyDataFlows->sum('total')); // 已产生流量
-            $node_info = $node->heartbeats->where('log_time', '>=', strtotime(config('tasks.recently_heartbeat')))->sortBy('log_time')->first(); // 近期负载
-            $node->isOnline = ! empty($node_info) && ! empty($node_info->load);
-            $node->load = $node_info->load ?? false;
-            $node->uptime = empty($node_info) ? 0 : seconds2time($node_info->uptime);
+            // $node_info = $node->heartbeats->where('log_time', '>=', strtotime(config('tasks.recently_heartbeat')))->sortBy('log_time')->first(); // 近期负载
+            // $node->isOnline = ! empty($node_info) && ! empty($node_info->load);
+            // $node->load = $node_info? $node_info->load : false;
+            // $node->uptime = empty($node_info) ? 0 : seconds2time($node_info->uptime);
         }
 
         return view('admin.node.index', ['nodeList' => $nodeList]);
