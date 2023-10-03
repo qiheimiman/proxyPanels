@@ -50,6 +50,7 @@ class NodeController extends Controller
             $node->load = false;
             $node->uptime =0;
             if($node_heartbeat){
+                // var_dump($node_heartbeat);
                 $json_data = json_decode($node_heartbeat, true);
                 if($json_data){
                     $node->isOnline = true;
@@ -61,7 +62,7 @@ class NodeController extends Controller
             // $node->load = $node_info? $node_info->load : false;
             // $node->uptime = empty($node_info) ? 0 : seconds2time($node_info->uptime);
         }
-
+// die;
         return view('admin.node.index', ['nodeList' => $nodeList]);
     }
 

@@ -33,7 +33,7 @@ class CoreController extends Controller
             'log_time' => time(),
         ];
         if ($node->heartbeats()->create($json_data)) {
-            Cache::put("panel:node_heartbeat:".$node->id, $json_data, 300);
+            Cache::put("panel:node_heartbeat:".$node->id, json_encode($json_data), 300);
             return $this->succeed();
         }
         return $this->failed([400201, '生成节点心跳信息失败']);
