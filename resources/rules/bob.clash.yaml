@@ -9,7 +9,7 @@ experimental:
 dns:
   enable: true
   ipv6: false
-  enhanced-mode: redir-host
+  enhanced-mode: fake-ip
   nameserver:
     - 1.2.4.8
     - 223.5.5.5
